@@ -192,6 +192,95 @@ function untrackUser () {
   analytics.reset()
 }
 
+function showFront (e, el) {
+  var front = document.getElementById('front-form');
+
+  var scope = {};
+  var meta = [{
+    name: 'currentPage',
+    value: window.location.toString()
+  }, {
+    name: 'browser',
+    value: bowser.name + ' ' + bowser.version
+  }];
+
+  if(isSignedIn()) {
+    scope.email = session.user.email;
+    meta.push({
+      name: 'uid',
+      value: session.user._id
+    });
+    meta.push({
+      name: 'gold',
+      value: hasGoldAccess() ? 'Yes' : 'No'
+    });
+    scope.name = session.user.realName || session.user.name;
+  }
+
+  scope.meta = meta;
+  showFront.scope = scope;
+  renderFrontForm();
+  front.classList.toggle('show', true);
+}
+
+function renderFrontForm () {
+  var front = document.getElementById('front-form');
+  render(front, getTemplateEl('front-form').textContent, showFront.scope);
+}
+
+function closeFrontForm (e) {
+  e.preventDefault();
+  document.getElementById('front-form').classList.toggle('show', false);
+}
+
+function submitFrontForm (e) {
+  var front = document.getElementById('front-form');
+  var button = document.querySelector('#front-form button');
+
+  e.preventDefault();
+  var form = e.target;
+  var formData = new FormData(e.target);
+  var url = form.getAttribute('action');
+
+  var errors = []
+
+  if(!formData.get('email')) {
+    errors.push('Email is required');
+  }
+
+  if(!formData.get('body')) {
+    errors.push('Message is required');
+  }
+
+  if(errors.length > 0) {
+    showFront.scope.errors = errors;
+    renderFrontForm();
+    return;
+  }
+
+  button.disabled = true;
+  button.innerHTML = 'Sending...';
+  request({
+    url: url,
+    data: formData,
+    method: 'POST',
+    withCredentials: true
+  }, function (err, resp, xhr) {
+    button.disabled = false;
+    button.innerHTML = 'Submit';
+    //A status of 0 means it tried to redirect, which throws an XHR error
+    //because of CORS, but we don't actually care about that, the form was
+    //successfully submitted
+    if(err && xhr.status != 0) {
+      showFront.scope.errors = [err.toString()];
+      renderFrontForm();
+      return;
+    }
+    showFront.scope.submitted = true;
+    renderFrontForm();
+  })
+}
+
 function showIntercom (e, el) {
   if (!window.Intercom)
     return toasty(Error('Intercom disabled by Ad-Block. Please unblock.'))
