@@ -233,22 +233,22 @@ function closeFrontForm (e) {
   document.getElementById('front-form').classList.toggle('show', false);
 }
 
-function submitFrontForm (e) {
+function submitFrontForm (e, el) {
   var front = document.getElementById('front-form');
   var button = document.querySelector('#front-form button');
 
   e.preventDefault();
   var form = e.target;
-  var formData = new FormData(e.target);
+  var formData = getDataSet(e.target);
   var url = form.getAttribute('action');
 
   var errors = []
 
-  if(!formData.get('email')) {
+  if(!formData.email) {
     errors.push('Email is required');
   }
 
-  if(!formData.get('body')) {
+  if(!formData.body) {
     errors.push('Message is required');
   }
 
@@ -260,18 +260,16 @@ function submitFrontForm (e) {
 
   button.disabled = true;
   button.innerHTML = 'Sending...';
-  request({
-    url: url,
+  requestJSON({
+    url: endpoint + '/support/send',
     data: formData,
-    method: 'POST',
-    withCredentials: true
+    method: 'POST'
   }, function (err, resp, xhr) {
+    console.log('err', err)
+    console.log('resp', resp)
     button.disabled = false;
     button.innerHTML = 'Submit';
-    //A status of 0 means it tried to redirect, which throws an XHR error
-    //because of CORS, but we don't actually care about that, the form was
-    //successfully submitted
-    if(err && xhr.status != 0) {
+    if(err) {
       showFront.scope.errors = [err.toString()];
       renderFrontForm();
       return;
@@ -1196,8 +1194,6 @@ function renderHeader () {
   render(el, template, {
     data: data
   })
-  var feedbackBtn = document.querySelector('[role="feedback"]')
-  if (feedbackBtn) feedbackBtn.classList.toggle('hide', !isSignedIn())
 }
 
 function renderHeaderMobile () {
