@@ -391,6 +391,7 @@ ul.errors li {
 #front-form label {
   display: block;
   font-size: 16px;
+  margin: 0.25em 0;
 }
 
 #front-form .form-group {
@@ -405,6 +406,7 @@ ul.errors li {
 #front-form  .form-group-inline label {
   font-weight: bold;
   padding: 1rem 0;
+  margin: 0px;
 }
 
 #front-form input,
