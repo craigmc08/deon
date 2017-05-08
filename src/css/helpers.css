@@ -367,13 +367,20 @@ ul.errors li {
   bottom: -90vh;
   width: 400px;
   z-index: 0;
-  padding: 1em 1.25em;
+  padding: 1em 1.25em 0em;
   background: #fff;
   overflow: auto;
   max-height: 90vh;
   transition: bottom 0.5s ease;
   box-shadow: 0 0 35px rgba(0,0,0,0.45);
   text-align: left;
+}
+
+#front-form .button--close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 1.5rem;
 }
 
 #front-form h3 {
@@ -383,12 +390,21 @@ ul.errors li {
 
 #front-form label {
   display: block;
-  font-weight: normal;
   font-size: 16px;
 }
 
 #front-form .form-group {
   margin-bottom: 1.5em;
+}
+
+#front-form  .form-group-inline.row {
+  margin-left: 0px;
+  margin-right: 0px;
+}
+
+#front-form  .form-group-inline label {
+  font-weight: bold;
+  padding: 1rem 0;
 }
 
 #front-form input,
