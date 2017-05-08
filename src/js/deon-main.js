@@ -229,7 +229,9 @@ function renderFrontForm () {
 }
 
 function closeFrontForm (e) {
-  e.preventDefault();
+  if(e) {
+    e.preventDefault();
+  }
   document.getElementById('front-form').classList.toggle('show', false);
 }
 
@@ -274,8 +276,8 @@ function submitFrontForm (e, el) {
       renderFrontForm();
       return;
     }
-    showFront.scope.submitted = true;
-    renderFrontForm();
+    toasty('Message sent!')
+    closeFrontForm();
   })
 }
 
