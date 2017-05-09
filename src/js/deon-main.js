@@ -244,7 +244,7 @@ function submitFrontForm (e, el) {
   var formData = getDataSet(e.target);
   var url = form.getAttribute('action');
 
-  var errors = []
+  var errors = [];
 
   if(!formData.email) {
     errors.push('Email is required');
@@ -267,8 +267,6 @@ function submitFrontForm (e, el) {
     data: formData,
     method: 'POST'
   }, function (err, resp, xhr) {
-    console.log('err', err)
-    console.log('resp', resp)
     button.disabled = false;
     button.innerHTML = 'Submit';
     if(err) {
