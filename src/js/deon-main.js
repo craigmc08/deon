@@ -237,7 +237,7 @@ function closeFrontForm (e) {
 
 function submitFrontForm (e, el) {
   var front = document.getElementById('front-form');
-  var button = document.querySelector('#front-form button');
+  var button = document.querySelector('#front-form button[type=submit]');
 
   e.preventDefault();
   var form = e.target;
