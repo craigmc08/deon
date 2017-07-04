@@ -492,25 +492,27 @@ function openPurchaseRelease (e, el) {
 
 function removeYouTubeClaim (e, el) {
   var data = getTargetDataSet(el)
+  var videoIdInput = document.querySelector('input[name="videoId"]');
   if (!data || !data.videoId) return
 
   var videoId = data.videoId
   if (videoId.indexOf('youtu')>-1){
     videoId = youTubeIdParser(videoId)
     if (!videoId) return toasty(Error('Please make sure to enter a YouTube ID or a valid YouTube URL.'))
+    videoIdInput.value = videoId;
   }
 
   requestJSON({
     url: endpoint + '/self/remove-claims',
     method: 'POST',
     data: {
-      videoId: data.videoId
+      videoId: videoId
     },
     withCredentials: true
   }, function (err, obj, xhr) {
     if (err) return window.alert(err.message)
     toasty(strings.claimReleased)
-    document.querySelector('input[name="videoId"]').value = ""
+    videoIdInput.value = ""
   })
 }
 
@@ -925,6 +927,7 @@ function transformWhitelists (obj) {
       whitelist.resume = { _id: whitelist._id, amount: whitelist.monthlyCost }
     if (whitelist.subscriptionActive)
       whitelist.cancel = { _id: whitelist._id }
+    whitelist.vendorName = getVendorName(whitelist.vendor);
     return whitelist
   })
   return obj
@@ -935,10 +938,14 @@ function transformReleaseTracks (obj, done) {
   var releaseId = h1 ? h1.getAttribute('release-id') : ''
   getArtistsAtlas(obj.results, function (err, atlas) {
     if (!atlas) atlas = {}
+    var num = -1;
     obj.results.forEach(function (track, index, arr) {
-      mapReleaseTrack(track, index, arr)
-      track.releaseId = releaseId
       track.playUrl = getPlayUrl(track.albums, releaseId)
+      if(track.playUrl) {
+        num++;
+      }
+      mapReleaseTrack(track, num, arr)
+      track.releaseId = releaseId
       track.artists = mapTrackArtists(track, atlas)
       track.downloadLink = getDownloadLink(releaseId, track._id)
       track.time = formatDuration(track.duration)
@@ -973,11 +980,15 @@ function transformReleaseTracks (obj, done) {
 function transformTracks (obj, done) {
   getArtistsAtlas(obj.results, function (err, atlas) {
     if (!atlas) atlas = {}
+    var num = -1;
     obj.results.forEach(function (track, index, arr) {
       var releaseId = track.albums[0].albumId
-      mapReleaseTrack(track, index, arr)
-      track.releaseId = releaseId
       track.playUrl = getPlayUrl(track.albums, releaseId)
+      if(track.playUrl) {
+        num++;
+      }
+      mapReleaseTrack(track, num, arr)
+      track.releaseId = releaseId
       track.artists = mapTrackArtists(track, atlas)
       track.downloadLink = getDownloadLink(releaseId, track._id)
       track.time = formatDuration(track.duration)
@@ -1158,13 +1169,16 @@ function accessDownloadOrModal (e, el) {
     }
   }
   else {
-    return accessGoldOrModal(e, el)
+    return canDownloadOrModal(e, el)
   }
 }
 
-function accessGoldOrModal (e, el) {
-  var hasit = hasGoldAccess()
-  if (hasit) return
+function canDownload () {
+  return hasGoldAccess() || (session.user && session.user.type && session.user.type.indexOf('artist') > -1);
+}
+
+function canDownloadOrModal (e, el) {
+  if(canDownload()) return true
   e.preventDefault()
   openModal('subscription-required-modal', {
     signedIn: isSignedIn()
